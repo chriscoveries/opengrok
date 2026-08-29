@@ -6,7 +6,7 @@ ship in Grok Bot 0.30 (issues #3, #5). This installer:
 
   1. Copies hop + runtime + maps into /home/box/sand-data
   2. Writes a wildcard model-bindings.json (keys never go in this file)
-  3. Wraps createProtoSession / createProtoSession2 in host-main.cjs (backed up first)
+  3. Wraps createProtoSessionProvider in host-main.cjs (backed up first)
   4. Optionally starts hop-server.py against your OpenAI-compatible upstream
 
 Run ON the box:
@@ -145,7 +145,8 @@ def main() -> int:
     print("  backup host -> %s" % backup)
 
     node_check(host)
-    tmp = Path(str(host) + ".opengrok.tmp")
+    # Node 20 `--check` rejects a `.tmp` extension (ERR_UNKNOWN_FILE_EXTENSION).
+    tmp = data / "host-main.opengrok-check.cjs"
     tmp.write_text(wrapped, encoding="utf-8")
     try:
         node_check(tmp)
@@ -154,7 +155,7 @@ def main() -> int:
         if tmp.exists():
             tmp.unlink()
         raise
-    print("  [host] wrapped createProtoSession -> %s" % host)
+    print("  [host] wrapped createProtoSessionProvider -> %s" % host)
 
     if not args.skip_hop:
         if not args.upstream:
