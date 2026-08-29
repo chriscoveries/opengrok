@@ -6,7 +6,7 @@ ship in Grok Bot 0.30 (issues #3, #5). This installer:
 
   1. Copies hop + runtime + maps into /home/box/sand-data
   2. Writes a wildcard model-bindings.json (keys never go in this file)
-  3. Wraps createProtoSession in host-main.cjs (backed up first)
+  3. Wraps createProtoSession / createProtoSession2 in host-main.cjs (backed up first)
   4. Optionally starts hop-server.py against your OpenAI-compatible upstream
 
 Run ON the box:
@@ -117,8 +117,12 @@ def main() -> int:
     hop_base = "http://127.0.0.1:%d/v1" % args.hop_port
     runtime_dest = data / "opengrok-runtime.cjs"
 
+    try:
+        wrapped = wrap_proto_session.wrap(src, str(runtime_dest))
+    except ValueError as e:
+        die(str(e))
+
     if args.dry_run:
-        wrap_proto_session.wrap(src, str(runtime_dest))
         print("== dry-run: wrap would succeed ==")
         return 0
 
@@ -141,7 +145,6 @@ def main() -> int:
     print("  backup host -> %s" % backup)
 
     node_check(host)
-    wrapped = wrap_proto_session.wrap(src, str(runtime_dest))
     tmp = Path(str(host) + ".opengrok.tmp")
     tmp.write_text(wrapped, encoding="utf-8")
     try:

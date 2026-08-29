@@ -6,7 +6,10 @@ and no `openai-hop-session.cjs`. That is issues #3 and #5. Saving
 `model-bindings.json` on your Mac does not change Grok Bot chat.
 
 This tree ships the missing hop session and an installer that wraps the
-factory that **does** exist on stock: `createProtoSession`.
+factory that **does** exist on stock: `createProtoSession`. Bundlers often
+rename it to `createProtoSession2` (same pattern as `options2` in issue #5).
+The wrapper matches that name. `--census-only` prints snippets around every
+hit so a miss is readable on the box.
 
 ## What you run (on the Grok Bot computer)
 
@@ -38,7 +41,7 @@ python3 tools/install-stock-box.py --census-only
    and `hop-server.py` into `/home/box/sand-data`.
 2. Writes `model-bindings.json` with a `*` wildcard (every conversation)
    unless you pass `--agent-id`.
-3. Backs up `host-main.cjs`, wraps `createProtoSession`, `node --check`s,
+3. Backs up `host-main.cjs`, wraps the proto-session factory, `node --check`s,
    then replaces the host file.
 4. Starts the hop with `API_SERVER_KEY` from the environment.
 
