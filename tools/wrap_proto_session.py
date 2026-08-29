@@ -2,15 +2,15 @@
 """Wrap stock proto-session factory so Grok Bot turns can hit a local OpenAI hop.
 
 Stock `host-main.cjs` (issues #3, #5) has no OpenAI hop lane. The live factory
-is named `createProtoSession`, but esbuild/tsc often emits `createProtoSession2`
-(same pattern as `options2` in issue #5). A naive search for
-`function createProtoSession(` therefore matches 0 on a real box.
+on Grok Bot 0.30 is `createProtoSessionProvider(client, requestedModel, ...)`
+and returns `new ProtoSession(...)`. Older notes looked for `createProtoSession`
+or a digit suffix (`createProtoSession2`); those are the wrong names.
 
 This transform is idempotent:
 
   1. Find the unique `function` / `async function` definition, or the unique
-     `name: function(` object property, whose name is `createProtoSession`
-     or `createProtoSession<digits>`.
+     `name: function(` object property, whose name starts with
+     `createProtoSession` (letters/digits after, e.g. Provider).
   2. Prepend a same-name wrapper that calls `opengrok-runtime.wrapSession`.
   3. Rename the original to `<name>_stock`.
 
@@ -26,9 +26,9 @@ MARKER = "/* opengrok-stock-wrap */"
 DEF = "function createProtoSession("
 STOCK_DEF = "function createProtoSession_stock("
 
-# Bundlers keep the prefix and append a digit (createProtoSession2). `_stock`
-# suffix is excluded: `_` is a word char, so this does not match the rename.
-NAME = r"createProtoSession\d*"
+# Live box: createProtoSessionProvider. Also createProtoSession / …2.
+# `_stock` rename is excluded: `_` is a word char so \b will not fire mid-name.
+NAME = r"createProtoSession[A-Za-z0-9]*"
 IDENT_RE = re.compile(r"\b(" + NAME + r")\b")
 DEF_RE = re.compile(r"(?P<prefix>(?:async\s+)?function\s+)(?P<name>" + NAME + r")\s*\(")
 PROP_RE = re.compile(
@@ -37,7 +37,7 @@ PROP_RE = re.compile(
 
 
 def snippets(src: str, limit: int = 8, radius: int = 90) -> list[dict]:
-    """Raw windows around every `createProtoSession` substring (incl. `…2`)."""
+    """Raw windows around every `createProtoSession` substring (incl. Provider)."""
     out = []
     start = 0
     needle = "createProtoSession"
@@ -147,7 +147,7 @@ def wrap(src: str, runtime_path: str) -> str:
         indent=2,
     )
     raise ValueError(
-        "need exactly 1 `function createProtoSession[digits](` (or "
+        "need exactly 1 `function createProtoSession*(` (or "
         "`name: function(` property), found function_defs=%d property_defs=%d.\n%s"
         % (len(defs), len(props), extra)
     )

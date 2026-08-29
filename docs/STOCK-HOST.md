@@ -6,10 +6,9 @@ and no `openai-hop-session.cjs`. That is issues #3 and #5. Saving
 `model-bindings.json` on your Mac does not change Grok Bot chat.
 
 This tree ships the missing hop session and an installer that wraps the
-factory that **does** exist on stock: `createProtoSession`. Bundlers often
-rename it to `createProtoSession2` (same pattern as `options2` in issue #5).
-The wrapper matches that name. `--census-only` prints snippets around every
-hit so a miss is readable on the box.
+factory that **does** exist on stock: `createProtoSessionProvider` (returns
+`new ProtoSession(...)`). Issue #5 counted the substring `createProtoSession`
+(2 hits: the definition and one call). `--census-only` prints snippets.
 
 ## What you run (on the Grok Bot computer)
 
@@ -53,7 +52,8 @@ If there is no binding, the wrapped factory throws. It does not silently
 fall back to the plan-quota proto session.
 
 If the host calls a session method the hop object does not implement, the
-turn errors. Set `OPENGROK_PROBE_PROTO=1`, send one message, and read
+turn errors and `/tmp/opengrok-session.log` records `missing-prop <name>`.
+Set `OPENGROK_PROBE_PROTO=1`, send one message, and read
 `/tmp/opengrok-proto-keys.json` for the real method names.
 
 ## What this does not do

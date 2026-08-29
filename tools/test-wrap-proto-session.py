@@ -16,6 +16,23 @@ FIXTURE = HERE / "fixtures" / "stock-host-mini.cjs"
 RENAMED = HERE / "fixtures" / "stock-host-renamed.cjs"
 ASYNC = HERE / "fixtures" / "stock-host-async.cjs"
 PROP = HERE / "fixtures" / "stock-host-property.cjs"
+PROVIDER = HERE / "fixtures" / "stock-host-provider.cjs"
+
+# Verbatim shape from a stock Grok Bot 0.30 box census (2026-08-29).
+LIVE_PROVIDER = """
+function createProtoSessionProvider(client, requestedModel, modelConfig, inferenceReason) {
+  return new ProtoSession(client, requestedModel, modelConfig, inferenceReason);
+}
+function outer(options2) {
+  const client = createSandCursorBackendClient(InferenceService, options2);
+  return createProtoSessionProvider(
+    client,
+    options2.requestedModel,
+    void 0,
+    options2.inferenceReason
+  );
+}
+"""
 
 
 def run(cmd, env=None, cwd=None):
@@ -107,6 +124,19 @@ def main():
     prop_wrapped = wrap_proto_session.wrap(prop_src, str(RUNTIME))
     assert "createProtoSession_stock:" in prop_wrapped
     probe(prop_wrapped)
+
+    live = wrap_proto_session.census(LIVE_PROVIDER)
+    assert live["idents"].get("createProtoSessionProvider") == 2, live
+    assert live["function_defs"][0]["name"] == "createProtoSessionProvider", live
+    live_wrapped = wrap_proto_session.wrap(LIVE_PROVIDER, str(RUNTIME))
+    assert "function createProtoSessionProvider_stock(" in live_wrapped
+
+    provider_src = PROVIDER.read_text(encoding="utf-8")
+    pr = wrap_proto_session.census(provider_src)
+    assert pr["function_defs"][0]["name"] == "createProtoSessionProvider", pr
+    provider_wrapped = wrap_proto_session.wrap(provider_src, str(RUNTIME))
+    assert "function createProtoSessionProvider_stock(" in provider_wrapped
+    probe(provider_wrapped)
 
     try:
         wrap_proto_session.wrap("function other(){}", str(RUNTIME))

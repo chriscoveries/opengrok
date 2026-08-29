@@ -17,6 +17,7 @@ var session = hop.createOpenAiHopSession({
 });
 assert.equal(session.opengrok, true);
 assert.equal(session.modelId, "glm-5.3-flash");
+assert.equal(session.getThinkingDetails(), undefined);
 session.abort();
 session.runTurn({ messages: [{ role: "user", content: "x" }] }).then(function () {
   console.error("aborted session should reject");

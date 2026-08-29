@@ -97,6 +97,10 @@ OpenAiHopSession.prototype.abort = function abort() {
   this._aborted = true;
 };
 
+OpenAiHopSession.prototype.getThinkingDetails = function getThinkingDetails() {
+  return undefined;
+};
+
 OpenAiHopSession.prototype._headers = function _headers() {
   var h = {};
   if (this.apiKey) h.Authorization = "Bearer " + this.apiKey;
