@@ -179,15 +179,29 @@ function hopFullStream(exec, hopSess, ctx, invocationId, tools, options2) {
       var turn = {
         messages: toOpenAIMessages(msgs),
         tools: toOpenAITools(tools),
+        max_tokens: (options2 && options2.maxTokens != null) ? options2.maxTokens : 8192,
       };
-      if (options2 && options2.maxTokens != null) turn.max_tokens = options2.maxTokens;
-      log("stream messages=" + turn.messages.length);
+      log("stream messages=" + turn.messages.length + " tools=" + ((turn.tools && turn.tools.length) || 0));
       var out = await hopSess.runTurn(turn);
       var text = (out && out.content) || "";
+      var calls = (out && out.tool_calls) || [];
+      log("stream out content=" + text.length + " reasoning=" + ((out && out.reasoning_content) || "").length + " tools=" + calls.length + " finish=" + ((out && out.finish_reason) || ""));
       if (out && out.reasoning_content) {
         yield { type: "reasoning", textDelta: out.reasoning_content };
       }
       if (text) yield { type: "text-delta", textDelta: text };
+      for (var i = 0; i < calls.length; i++) {
+        var c = calls[i] || {};
+        var fn = c.function || {};
+        var args = {};
+        try { args = JSON.parse(fn.arguments || "{}"); } catch (e) { args = {}; }
+        yield {
+          type: "tool-call",
+          toolCallId: c.id || ("call_" + i),
+          toolName: fn.name || "",
+          args: args,
+        };
+      }
       var u = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
       var ru = out && out.raw && out.raw.usage;
       if (ru) {
@@ -195,7 +209,9 @@ function hopFullStream(exec, hopSess, ctx, invocationId, tools, options2) {
         u.completionTokens = ru.completion_tokens || 0;
         u.totalTokens = ru.total_tokens || 0;
       }
-      yield { type: "finish", finishReason: (out && out.finish_reason) || "stop", usage: u };
+      var finish = (out && out.finish_reason) || "stop";
+      if (finish === "tool_calls") finish = "tool-calls";
+      yield { type: "finish", finishReason: finish, usage: u };
       okUsage(u);
       if (!settled.r) {
         settled.r = true;
@@ -203,7 +219,7 @@ function hopFullStream(exec, hopSess, ctx, invocationId, tools, options2) {
           id: (out && out.raw && out.raw.id) || "",
           modelId: hopSess.modelId,
           timestamp: new Date(),
-          messages: [{ role: "assistant", content: text }],
+          messages: [{ role: "assistant", content: [{ type: "text", text: text }] }],
         });
       }
     } catch (err) {

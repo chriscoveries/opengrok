@@ -80,6 +80,19 @@ function postJson(urlStr, body, headers, timeoutMs) {
   });
 }
 
+function coerceContent(content) {
+  if (content == null) return "";
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) {
+    return content.map(function (p) {
+      if (typeof p === "string") return p;
+      if (p && p.type === "text") return p.text || "";
+      return "";
+    }).join("");
+  }
+  return String(content);
+}
+
 function OpenAiHopSession(opts) {
   opts = opts || {};
   this.requestKind = opts.requestKind;
@@ -117,7 +130,7 @@ OpenAiHopSession.prototype._body = function _body(turn) {
     stream: false,
   };
   if (Array.isArray(turn.tools) && turn.tools.length) body.tools = turn.tools;
-  if (turn.max_tokens != null) body.max_tokens = turn.max_tokens;
+  body.max_tokens = turn.max_tokens != null ? turn.max_tokens : 8192;
   applyMaps(body, {
     modelId: this.modelId,
     baseUrl: this.baseUrl,
@@ -142,8 +155,9 @@ OpenAiHopSession.prototype.runTurn = function runTurn(turn) {
     var choice = res.json && res.json.choices && res.json.choices[0];
     var message = (choice && choice.message) || {};
     return {
-      content: message.content || "",
+      content: coerceContent(message.content),
       reasoning_content: message.reasoning_content || "",
+      tool_calls: Array.isArray(message.tool_calls) ? message.tool_calls : [],
       finish_reason: choice && choice.finish_reason,
       raw: res.json,
     };
