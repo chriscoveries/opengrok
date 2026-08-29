@@ -22,5 +22,9 @@ jobs:
         run: node tools/test-provider-maps.cjs
       - name: Contract B — provider-maps-hop.cjs
         run: node tools/test-provider-maps-hop.cjs
+      - name: stock createProtoSession wrap
+        run: python tools/test-wrap-proto-session.py
+      - name: openai hop session
+        run: node tools/test-openai-hop-session.cjs
       - name: repo self-check (leaks, refs, compile)
         run: python tools/qa.py
