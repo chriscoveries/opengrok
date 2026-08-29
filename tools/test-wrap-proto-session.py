@@ -18,10 +18,10 @@ ASYNC = HERE / "fixtures" / "stock-host-async.cjs"
 PROP = HERE / "fixtures" / "stock-host-property.cjs"
 PROVIDER = HERE / "fixtures" / "stock-host-provider.cjs"
 
-# Verbatim shape from a stock Grok Bot 0.30 box census (2026-08-29).
+# Live Grok Bot 0.30: factory returns ProtoSessionProvider with getSession().
 LIVE_PROVIDER = """
 function createProtoSessionProvider(client, requestedModel, modelConfig, inferenceReason) {
-  return new ProtoSession(client, requestedModel, modelConfig, inferenceReason);
+  return new ProtoSessionProvider(client, requestedModel, modelConfig, inferenceReason);
 }
 function outer(options2) {
   const client = createSandCursorBackendClient(InferenceService, options2);
@@ -30,7 +30,7 @@ function outer(options2) {
     options2.requestedModel,
     void 0,
     options2.inferenceReason
-  );
+  ).getSession(imageResizingMiddleware);
 }
 """
 
@@ -74,6 +74,15 @@ def probe(wrapped: str, extra_js: str = "") -> None:
             "  }\n"
             "  if (s.modelId !== 'glm-5.3-flash') {\n"
             "    console.error('modelId', s.modelId);\n"
+            "    process.exit(1);\n"
+            "  }\n"
+            "  if (typeof s.getSession !== 'function') {\n"
+            "    console.error('missing getSession');\n"
+            "    process.exit(1);\n"
+            "  }\n"
+            "  const ps = s.getSession();\n"
+            "  if (!ps) {\n"
+            "    console.error('getSession returned empty');\n"
             "    process.exit(1);\n"
             "  }\n"
             "  console.log('wrap-ok');\n"

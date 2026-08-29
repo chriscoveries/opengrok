@@ -1,9 +1,28 @@
 "use strict";
 function createProtoSessionProvider(client, requestedModel, modelConfig, inferenceReason) {
   return {
-    kind: "proto",
-    model: (requestedModel && requestedModel.modelId) || "none",
-    inferenceReason: inferenceReason,
+    getSession: function () {
+      return {
+        getExecutor: function () {
+          return {
+            getMessages: function () {
+              return [{ role: "user", content: "hi" }];
+            },
+            stream: function () {
+              throw new Error("stock stream must not run");
+            },
+          };
+        },
+        getModelId: function () {
+          return (requestedModel && requestedModel.modelId) || "none";
+        },
+      };
+    },
+    getProviderName: function () { return "proto"; },
+    getModelId: function () {
+      return (requestedModel && requestedModel.modelId) || "none";
+    },
+    getThinkingDetails: function () { return undefined; },
   };
 }
 function ping() {
