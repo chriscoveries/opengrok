@@ -73,12 +73,14 @@ def write_bindings(path: Path, model: str, hop_base: str, agent_id: str) -> None
         "provider": "custom",
         "hopBaseUrl": hop_base,
         "maxMode": False,
-        "parameters": [{"id": "fast", "value": "true"}],
+        # no default parameters: GLM "fast" (thinking disabled) is rejected by
+        # some upstreams (opencode zen → 400 provider error, verified 2026-08-29).
+        # Add knobs per-binding only after probing the lane.
+        "parameters": [],
     }
     agents[agent_id] = entry
-    if "*" not in agents:
-        agents["*"] = dict(entry)
-        agents["*"]["name"] = model + " (wildcard)"
+    # No implicit "*" wildcard: --agent-id scopes routing to that agent only.
+    # Unbound agents pass through to stock behavior (see opengrok-runtime.cjs).
     doc = {"_comment": "created by install-stock-box.py; never put credentials here", "agents": agents}
     path.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
     print("  bindings -> %s (%d agents)" % (path, len(agents)))

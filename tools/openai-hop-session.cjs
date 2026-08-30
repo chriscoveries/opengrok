@@ -49,6 +49,9 @@ function postJson(urlStr, body, headers, timeoutMs) {
     var lib = u.protocol === "https:" ? https : http;
     var payload = Buffer.from(JSON.stringify(body), "utf8");
     var hdrs = Object.assign({
+      // Cloudflare-fronted gateways (opencode.ai zen) block UA-less clients with
+      // 403 error 1010 — verified live 2026-08-29; a plain UA header fixes it.
+      "User-Agent": "opengrok-hop/1",
       "Content-Type": "application/json",
       "Content-Length": String(payload.length),
       "Accept": "application/json",

@@ -305,9 +305,10 @@ function wrapSession(stockFn, args) {
   }
   var binding = resolveBinding(arr);
   if (!binding || !binding.hopBaseUrl || !binding.modelId) {
-    var err = new Error("opengrok: no model binding for this turn (set agents['*'] or a matching agent id in model-bindings.json)");
-    log(err.message);
-    throw err;
+    // Shared boxes host several agents: an unbound conversation must keep its
+    // stock behavior, not break. Log and pass through to the original factory.
+    log("passthrough (no binding for this turn)");
+    return stockFn.apply(null, arr);
   }
   var requested = requestedModelId(arr);
   log("route " + binding.modelId + " -> " + binding.hopBaseUrl + (requested ? " requested=" + requested : ""));
