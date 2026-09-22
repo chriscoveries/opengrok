@@ -6,13 +6,14 @@
   <a href="#-quick-start"><img alt="setup" src="https://img.shields.io/badge/setup-one%20command-7c6cff"></a>
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-MIT-3fb950"></a>
   <a href="#-the-laws"><img alt="evidence" src="https://img.shields.io/badge/maps-evidence--based-a78bfa"></a>
-  <a href="https://github.com/OnlyTerp/opengrok/actions/workflows/verify.yml"><img alt="verify" src="https://github.com/OnlyTerp/opengrok/actions/workflows/verify.yml/badge.svg"></a>
+  <a href="https://github.com/chriscoveries/opengrok/actions/workflows/verify.yml"><img alt="verify" src="https://github.com/chriscoveries/opengrok/actions/workflows/verify.yml/badge.svg"></a>
   <img alt="deps" src="https://img.shields.io/badge/dependencies-zero-2f81f7">
   <img alt="platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-8b949e">
 </p>
 
 <p align="center">
   <b>Pick a model per agent. Save. It talks native and survives Grok Bot updates.</b><br>
+  chriscoveries' copy of <a href="https://github.com/aaravarr/opengrok">aaravarr/opengrok</a> — same codebase, kept in lockstep; file issues here.<br>
   Keys never leave your machine. Every wire claim in this repo is probe-verified, not vibed.
 </p>
 
