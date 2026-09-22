@@ -16,6 +16,10 @@
   Keys never leave your machine. Every wire claim in this repo is probe-verified, not vibed.
 </p>
 
+<p align="center">
+  <img src="assets/opengrok.svg" alt="opengrok" width="860">
+</p>
+
 ---
 
 <p align="center">
@@ -25,7 +29,7 @@
 ## ⚡ Quick start
 
 ```bash
-git clone https://github.com/OnlyTerp/opengrok
+git clone https://github.com/chriscoveries/opengrok
 cd opengrok
 python setup.py
 ```
